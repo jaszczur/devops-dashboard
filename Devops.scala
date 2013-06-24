@@ -8,7 +8,7 @@ import scala.util.Random
 object Main {
 
   def main(args: Array[String]) : Unit = {
-    val directory = if (args.length > 1) args(0) else "/tmp/devops"
+    val directory = if (args.length >= 1) args(0) else "/tmp/devops"
     val downloader = new Downloader(directory)
     val parser = new DevopsParser(downloader)
     val item = randomItem(parser.download())
@@ -26,17 +26,22 @@ object Main {
       </head>
       <body>
         <h1>{item.title}</h1>
-        <p><img src={item.imagePath}/></p>
+        <p><img src={"file://" + item.imagePath}/></p>
       </body>
     </html>
     println(html.toString)
   }
 
   def randomItem[T](seq : Seq[T]) : T = {
-    val index = (Random.nextDouble * seq.length).ceil.toInt
+    val index = (Random.nextDouble * seq.length).ceil.toInt - 1
     seq(index)
   }
 }
+
+
+
+case class DevopsItem(title: String, imagePath: String)
+
 
 
 class Downloader(dirPath: String) {
@@ -61,7 +66,7 @@ class Downloader(dirPath: String) {
   }
 }
 
-case class DevopsItem(title: String, imagePath: String)
+
 
 class DevopsParser(downloader: Downloader) {
   val rss = XML.load(new URL(DevopsParser.RssUrl))
@@ -79,7 +84,7 @@ class DevopsParser(downloader: Downloader) {
   def download() : Seq[DevopsItem] = {
     parse().map {item => 
       val file = downloader.download(new URL(item.imagePath))
-      item.copy(imagePath = "file://" + file.toString())
+      item.copy(imagePath = file.toString())
     }
   }
 }
@@ -87,4 +92,6 @@ class DevopsParser(downloader: Downloader) {
 object DevopsParser {
   private val RssUrl = "http://devopsreactions.tumblr.com/rss"
 }
+
+
 
