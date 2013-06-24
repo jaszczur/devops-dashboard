@@ -8,9 +8,28 @@ import scala.util.Random
 object Main {
 
   def main(args: Array[String]) : Unit = {
-    val downloader = new Downloader("/tmp/devops")
+    val directory = if (args.length > 1) args(0) else "/tmp/devops"
+    val downloader = new Downloader(directory)
     val parser = new DevopsParser(downloader)
-    for (item <- parser.download()) println(item)
+    val item = randomItem(parser.download())
+    val html = <html>
+      <head>
+        <title>Devops Reactions</title>
+        <style type="text/css">
+          body {{
+            text-align: center;
+            font-size: 30px;
+            font-family: sans-serif;
+            font-weight: bold;
+          }}
+        </style>
+      </head>
+      <body>
+        <h1>{item.title}</h1>
+        <p><img src={item.imagePath}/></p>
+      </body>
+    </html>
+    println(html.toString)
   }
 
   def randomItem[T](seq : Seq[T]) : T = {
@@ -60,7 +79,7 @@ class DevopsParser(downloader: Downloader) {
   def download() : Seq[DevopsItem] = {
     parse().map {item => 
       val file = downloader.download(new URL(item.imagePath))
-      item.copy(imagePath = file.toString())
+      item.copy(imagePath = "file://" + file.toString())
     }
   }
 }
