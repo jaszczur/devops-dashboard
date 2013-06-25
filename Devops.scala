@@ -18,7 +18,7 @@ object Main {
         <style type="text/css">
           body {{
             text-align: center;
-            font-size: 30px;
+            font-size: 25px;
             font-family: sans-serif;
             font-weight: bold;
           }}
