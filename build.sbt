@@ -1,3 +1,5 @@
+import AssemblyKeys._
+
 name := "Devops"
  
 version := "1.0"
@@ -13,4 +15,6 @@ libraryDependencies ++= Seq(
   "junit"             % "junit"           % "4.11"  % "test",
   "com.novocode"      % "junit-interface" % "0.7"   % "test->default"
 )
+
+assemblySettings
 
