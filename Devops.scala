@@ -3,10 +3,13 @@ import java.io._
 import java.net.URL
 import scala.xml.XML
 import scala.util.matching.Regex
-import scala.util.Random
+import scala.math.{abs, min}
+import java.util.Random
 
 
 object Main {
+  val random = new Random()
+  val NUM_LATEST_ITEMS = 5
 
   def main(args: Array[String]) : Unit = {
     val directory = if (args.length >= 1) args(0) else "/tmp/devops"
@@ -33,8 +36,16 @@ object Main {
     println(html.toString)
   }
 
+
+
   def randomItem[T](seq : Seq[T]) : T = {
-    val index = (Random.nextDouble * seq.length).ceil.toInt - 1
+    val index = (random.nextDouble * min(seq.length, NUM_LATEST_ITEMS)).
+        floor.toInt
+    //val r = random.nextGaussian()
+    //val sd = 1
+    //val mean = 1
+    //val index = sd * r + mean
+
     seq(index)
   }
 }
@@ -71,7 +82,7 @@ class Downloader(dirPath: String) {
 
 class DevopsParser(downloader: Downloader) {
   val rss = XML.load(new URL(DevopsParser.RssUrl))
-  val imageUrlPattern = ".* src=\"(.+gif)\".*".r
+  val imageUrlPattern = ".* src=\"(.+)\".*".r
 
   def parse() : Seq[DevopsItem] = {
     rss \\ "item" map {item =>
