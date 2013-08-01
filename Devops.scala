@@ -9,12 +9,11 @@ import java.util.Random
 
 object Main {
   val random = new Random()
-  val NUM_LATEST_ITEMS = 5
 
   def main(args: Array[String]) : Unit = {
-    val directory = if (args.length >= 1) args(0) else "/tmp/devops"
+    val directory = if (args.length >= 1) args(0) else "C:/Temp"
     val downloader = new Downloader(directory)
-    val parser = new DevopsParser(downloader)
+    val parser = new MultipleRssParser(downloader, Configuration.rssUrls)
     val item = randomItem(parser.download())
     val html = <html>
       <head>
@@ -39,8 +38,7 @@ object Main {
 
 
   def randomItem[T](seq : Seq[T]) : T = {
-    val index = (random.nextDouble * min(seq.length, NUM_LATEST_ITEMS)).
-        floor.toInt
+    val index = (random.nextDouble * seq.length).floor.toInt
     //val r = random.nextGaussian()
     //val sd = 1
     //val mean = 1
@@ -65,6 +63,7 @@ class Downloader(dirPath: String) {
   def download(url: URL) : File = {
     val file = new File(directory, fileName(url.getFile()))
     if (!file.exists()) {
+      //println("Downloading " + url)
       val inputChannel = Channels.newChannel(url.openStream())
       val output = new FileOutputStream(file)
       output.getChannel().transferFrom(inputChannel, 0, Long.MaxValue)
@@ -78,14 +77,24 @@ class Downloader(dirPath: String) {
   }
 }
 
+trait Parser {
+  def download() : Seq[DevopsItem]
+}
 
+class MultipleRssParser(downloader: Downloader, urls: Seq[String]) extends Parser {
+  private val parsers = urls.map(url => new RssParser(downloader, url))
 
-class DevopsParser(downloader: Downloader) {
-  val rss = XML.load(new URL(DevopsParser.RssUrl))
-  val imageUrlPattern = ".* src=\"(.+)\".*".r
+  override def download() = parsers.foldLeft(Seq[DevopsItem]()) {(result, parser) => 
+    result ++ parser.download()
+  }
+}
+
+class RssParser(downloader: Downloader, url: String) extends Parser {
+  val rss = XML.load(new URL(url))
+  val imageUrlPattern = ".* src=\"(.+?)\".*".r
 
   def parse() : Seq[DevopsItem] = {
-    rss \\ "item" map {item =>
+    (rss \\ "item").take(Configuration.maxItemsPerRss) map {item =>
       val title = (item \ "title").text
       val description = (item \ "description").text.replaceAll("\n", "")
       val imageUrlPattern(imgSrc) = description
@@ -93,7 +102,7 @@ class DevopsParser(downloader: Downloader) {
     }
   }
 
-  def download() : Seq[DevopsItem] = {
+  override def download() = {
     parse().map {item => 
       val file = downloader.download(new URL(item.imagePath))
       item.copy(imagePath = file.toString())
@@ -101,8 +110,11 @@ class DevopsParser(downloader: Downloader) {
   }
 }
 
-object DevopsParser {
-  private val RssUrl = "http://devopsreactions.tumblr.com/rss"
+object Configuration {
+  val rssUrls = Seq(
+    "http://devopsreactions.tumblr.com/rss",
+    "http://thecodinglove.com/rss")
+  val maxItemsPerRss = 5
 }
 
 
