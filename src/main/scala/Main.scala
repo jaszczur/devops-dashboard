@@ -1,4 +1,3 @@
-
 import java.util.Random
 import scala.math.{abs, min}
 

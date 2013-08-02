@@ -1,4 +1,3 @@
-
 case class ImageItem(title: String, imagePath: String)
 
 object Configuration {
@@ -10,6 +9,4 @@ object Configuration {
   
   val defaultDownloadFolder = "C:/Temp"
 }
-
-
 

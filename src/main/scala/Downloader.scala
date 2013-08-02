@@ -24,3 +24,4 @@ class Downloader(dirPath: String) {
     path.substring(lastSlash)
   }
 }
+

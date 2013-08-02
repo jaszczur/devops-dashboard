@@ -34,3 +34,4 @@ class RssParser(downloader: Downloader, url: String) extends Parser {
     }
   }
 }
+
