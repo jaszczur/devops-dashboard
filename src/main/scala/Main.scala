@@ -22,7 +22,10 @@ object Main {
         </style>
       </head>
       <body>
-        <h1>{item.title}</h1>
+        {item.title match {
+          case Some(t) => <h1>{t}</h1>
+          case None    => ""
+        } }
         <p><img src={"file://" + item.imagePath}/></p>
       </body>
     </html>

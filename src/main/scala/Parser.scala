@@ -20,7 +20,8 @@ class RssParser(downloader: Downloader, url: String) extends Parser {
 
   def parse() : Seq[ImageItem] = {
     (rss \\ "item").take(Configuration.maxItemsPerRss) map {item =>
-      val title = (item \ "title").text
+      val rawTitle = (item \ "title").text
+      val title = if (rawTitle.contains(" ")) Some(rawTitle) else None
       val description = (item \ "description").text.replaceAll("\n", "")
       val imageUrlPattern(imgSrc) = description
       ImageItem(title, imgSrc)

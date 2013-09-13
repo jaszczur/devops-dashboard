@@ -1,4 +1,4 @@
-case class ImageItem(title: String, imagePath: String)
+case class ImageItem(title: Option[String], imagePath: String)
 
 object Configuration {
   val rssUrls = Seq(
